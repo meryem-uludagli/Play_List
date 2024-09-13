@@ -74,19 +74,12 @@ const setSong = (arrayIndex) => {
 }
 
 const timeFormatter = (timeInput) => {
-        let minute = Math.floor(timeInput / 60)
-        minute = minute < 10 ? "0" + minute : minute
-        let second = Math.floor(timeInput % 60)
-        second = sec < 10 ? "0" + second : second
-        return `${minute}:${second}`
-    }
-    //* Set Time
-audio.onloadedmetadata = () => {
-    maxDuration.innerText = timeFormatter(audio.duration)
+    let minute = Math.floor(timeInput / 60)
+    minute = minute < 10 ? "0" + minute : minute
+    let second = Math.floor(timeInput % 60)
+    second = second < 10 ? "0" + second : second
+    return `${minute}:${second}`
 }
-
-playListContainer.classList.add('hide')
-playAudio()
 
 //* Play music
 const playAudio = () => {
@@ -159,25 +152,65 @@ repeatButton.addEventListener("click", () => {
     }
 })
 
-//* Progress Bar
-progressBar.addEventListener("click", (event) => {
+// * progress bar
+progressBar.addEventListener('click', (event) => {
     let coordStart = progressBar.getBoundingClientRect().left
     console.log(coordStart)
 
-    //* End
-    let coorEnd = event.clientX
-    console.log(coorEnd)
-    let progress = (coorEnd - coordStart) / progressBar.off
+    let coordEnd = event.clientX
+    console.log(coordEnd)
+
+    console.log("progressBar.offsetWidth: " + progressBar.offsetWidth)
+
+    let progress = (coordEnd - coordStart) / progressBar.offsetWidth
+    currentProgress.style.width = (audio.currentTime / audio.duration) * 100 + "%"
+
+    console.log(progress)
+
+    audio.currentTime = progress * audio.duration
+    audio.play()
+    pauseButton.classList.remove("hide")
+    playButton.classList.add("hide")
+})
+
+setInterval(() => {
+    currentTimeRef.innerHTML = timeFormatter(audio.currentTime)
+    currentProgress.style.width = (audio.currentTime / audio.duration)
+}, 1000);
+
+audio.addEventListener('timeupdate', () => {
+    currentTimeRef.innerText = timeFormatter(audio.currentTime)
 })
 
 
+audio.onended = () => {
+    nextSong()
+}
 
 
-
+const initializePlaylist = () => {
+    for (let i in songsList) {
+        playListSongs.innerHTML += `<li class="playlistSong"
+        onclick="setSong(${i})">
+            <div class="playlist-image-container">
+                <img src="${songsList[i].image}" />
+            </div>
+            <div class="playlist-song-details">
+                <span id="playlist-song-name">
+                    ${songsList[i].name}
+                </span>
+                <span id="playlist-song-artist-album">
+                    ${songsList[i].artist}
+                </span>
+            </div>
+        </li>
+        `
+    }
+}
 
 //* Refresh screen
 window.onload = () => {
     index = 0
     setSong(index)
-    pauseAudio()
+    playAudio()
 }
